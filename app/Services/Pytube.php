@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Pytube\Exceptions\EmptyUrlException;
 use App\Services\Pytube\Exceptions\SetStreamsException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -64,8 +65,10 @@ class Pytube
      * @return void
      */
     public function __construct(
-        private $url = "https://www.youtube.com/watch?v=tGV3QaO0O2U"
+        private ?string $url = null
     ) {
+
+        throw_if(empty($url), EmptyUrlException::class, 'Необходимо указать ссылку');
 
         if (empty($this->phyton = exec('which python'))) {
             $this->phyton = exec('which python3');
@@ -231,5 +234,25 @@ class Pytube
     public function downloadAudio()
     {
         $this->download($this->itags['audio']);
+    }
+
+    /**
+     * Наименование видео
+     * 
+     * @return null|string
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * Ссылка на превью
+     * 
+     * @return null|string
+     */
+    public function getThumbnailUrl()
+    {
+        return $this->thumbnailUrl;
     }
 }

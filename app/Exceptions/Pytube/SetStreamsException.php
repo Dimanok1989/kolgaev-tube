@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Pytube\Exceptions;
+namespace App\Exceptions\Pytube;
 
 use Exception;
 

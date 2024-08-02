@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use App\Services\Pytube\Exceptions\EmptyUrlException;
-use App\Services\Pytube\Exceptions\SetStreamsException;
+use App\Exceptions\Pytube\EmptyUrlException;
+use App\Exceptions\Pytube\SetStreamsException;
+use Exception;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -22,6 +24,13 @@ class Pytube
      * @var string
      */
     protected $dir;
+
+    /**
+     * Идентификатор операции
+     * 
+     * @var string
+     */
+    protected $uuid;
 
     /**
      * Наименование видео
@@ -77,10 +86,11 @@ class Pytube
         $this->dir = base_path('pytube');
         $this->streams = collect();
 
+        $this->uuid = Str::orderedUuid()->toString();
+
         $storage = Storage::disk('public');
-        $dir = Str::orderedUuid()->toString();
-        $this->path = $storage->path($dir);
-        $storage->makeDirectory($dir);
+        $this->path = $storage->path($this->uuid);
+        $storage->makeDirectory($this->uuid);
 
         $this->setMeta();
     }
@@ -94,9 +104,12 @@ class Pytube
      */
     private function setMeta()
     {
-        exec($this->metaCommand(), $output, $code);
+        $result = Process::run($this->metaCommand());
+        $output = explode("\n", $result->output());
 
-        throw_if(!empty($code), SetStreamsException::class, "Ошибка получения мета данных");
+        if ($result->failed()) {
+            throw new SetStreamsException("Ошибка получения мета данных");
+        }
 
         $this->title = $output[0] ?? null;
         $this->thumbnailUrl = $output[1] ?? null;
@@ -209,31 +222,46 @@ class Pytube
      * Скачивание файла
      * 
      * @param string $itag
-     * @return void
+     * @return array
      */
     private function download(string $itag)
     {
-        exec($this->downloadCommand($itag));
+        $response = [];
+
+        $process = Process::run(
+            $this->downloadCommand($itag),
+            function (string $type, string $output) use (&$response) {
+                if ($type == "out") {
+                    $response[] = $output;
+                }
+            }
+        );
+
+        if ($process->failed()) {
+            throw new Exception("Ошибка скачиваания файла");
+        }
+
+        return $response;
     }
 
     /**
      * Скачивание видео
      * 
-     * @return void
+     * @return array
      */
     public function downloadVideo()
     {
-        $this->download($this->itags['video']);
+        return $this->download($this->itags['video']);
     }
 
     /**
      * Скачивание аудиодорожки
      * 
-     * @return void
+     * @return array
      */
     public function downloadAudio()
     {
-        $this->download($this->itags['audio']);
+        return $this->download($this->itags['audio']);
     }
 
     /**
@@ -254,5 +282,17 @@ class Pytube
     public function getThumbnailUrl()
     {
         return $this->thumbnailUrl;
+    }
+
+    /**
+     * Формирует путь
+     * 
+     * @param null|string $path
+     * @return string
+     */
+    public function path(?string $path = null)
+    {
+        return $this->uuid
+            . (!empty($path) ? DIRECTORY_SEPARATOR . $path : "");
     }
 }

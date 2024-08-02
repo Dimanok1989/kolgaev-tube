@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class DownloadProcess extends Model
 {
@@ -43,5 +44,33 @@ class DownloadProcess extends Model
             'merged_at' => "datetime",
             'done_at' => "datetime",
         ];
+    }
+
+    /**
+     * Проверка наличия видеофайла
+     * 
+     * @return bool
+     */
+    public function videoExists()
+    {
+        if (!$this->video_path) {
+            return false;
+        }
+
+        return Storage::disk('public')->exists($this->video_path);
+    }
+
+    /**
+     * Проверка наличия аудио
+     * 
+     * @return bool
+     */
+    public function audioExists()
+    {
+        if (!$this->audio_path) {
+            return false;
+        }
+
+        return Storage::disk('public')->exists($this->audio_path);
     }
 }

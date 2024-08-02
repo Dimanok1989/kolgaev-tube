@@ -24,6 +24,13 @@ class StartDownloadJob implements ShouldQueue
     protected $timeout = 0;
 
     /**
+     * Количество попыток выполнения задания
+     * 
+     * @var int
+     */
+    protected $tires = 1;
+
+    /**
      * Create a new job instance.
      * 
      * @param int $processId
@@ -75,6 +82,7 @@ class StartDownloadJob implements ShouldQueue
 
             Http::post($this->process->callback_url . "/downloaded");
         } catch (Exception $e) {
+            \Log::error('job error {error}', ['error' => $e->getMessage()]);
             FailedProcessJob::dispatch($this->process->callback_url, $e->getMessage());
         }
     }

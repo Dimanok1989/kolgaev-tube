@@ -108,6 +108,7 @@ class Pytube
         $output = explode("\n", $result->output());
 
         if ($result->failed()) {
+            \Log::error('set meta error:', $output);
             throw new SetStreamsException("Ошибка получения мета данных");
         }
 
@@ -238,7 +239,7 @@ class Pytube
         );
 
         if ($process->failed()) {
-            throw new Exception("Ошибка скачиваания файла");
+            throw new Exception("Ошибка скачивания файла");
         }
 
         return $response;

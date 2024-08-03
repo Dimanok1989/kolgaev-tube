@@ -47,6 +47,8 @@ class StartDownloadJob implements ShouldQueue
      */
     public function handle(): void
     {
+        set_time_limit(3600);
+
         try {
 
             $pytube = new Pytube(

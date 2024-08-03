@@ -249,13 +249,21 @@ class Pytube
      */
     private function setItags()
     {
-        $maxVideo = $this->streams->max('res_int');
-
         $itags['video'] = $this->findItag($this->streams, ...[
             'type' => 'video',
             'mime_type' => 'video/mp4',
-            'res_int' => $maxVideo,
+            'res' => "1080p",
         ]);
+
+        $maxVideo = $this->streams->max('res_int');
+
+        if (empty($itags['video'])) {
+            $itags['video'] = $this->findItag($this->streams, ...[
+                'type' => 'video',
+                'mime_type' => 'video/mp4',
+                'res_int' => $maxVideo,
+            ]);
+        }
 
         if (empty($itags['video'])) {
             $itags['video'] = $this->findItag($this->streams, ...[

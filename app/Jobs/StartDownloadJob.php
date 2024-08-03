@@ -21,14 +21,14 @@ class StartDownloadJob implements ShouldQueue
      * 
      * @var int
      */
-    protected $timeout = 0;
+    public $timeout = 3600;
 
     /**
      * Количество попыток выполнения задания
      * 
      * @var int
      */
-    protected $tires = 1;
+    public $tries = 1;
 
     /**
      * Create a new job instance.

@@ -16,19 +16,21 @@ class DownloadProcess extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'process_id',
         'user_id',
         'chat_id',
+        'video_id',
         'url',
         'callback_url',
         'token',
         'title',
-        'thumbnail_url',
         'video_path',
         'audio_path',
         'downloaded_at',
         'uploaded_at',
         'merged_at',
         'done_at',
+        'meta',
     ];
 
     /**
@@ -43,6 +45,7 @@ class DownloadProcess extends Model
             'uploaded_at' => "datetime",
             'merged_at' => "datetime",
             'done_at' => "datetime",
+            'meta' => "array",
         ];
     }
 
@@ -57,7 +60,7 @@ class DownloadProcess extends Model
             return false;
         }
 
-        return Storage::disk('public')->exists($this->video_path);
+        return Storage::exists($this->video_path);
     }
 
     /**
@@ -71,6 +74,6 @@ class DownloadProcess extends Model
             return false;
         }
 
-        return Storage::disk('public')->exists($this->audio_path);
+        return Storage::exists($this->audio_path);
     }
 }

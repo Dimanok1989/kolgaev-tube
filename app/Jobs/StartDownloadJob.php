@@ -49,11 +49,16 @@ class StartDownloadJob implements ShouldQueue
     {
         try {
 
-            $pytube = new Pytube($this->process->url);
+            $pytube = new Pytube(
+                $this->process->url,
+                $this->process->process_id
+            );
 
             $this->process->update([
+                'process_id' => $pytube->uuid,
+                'video_id' => $pytube->getVideoId(),
                 'title' => $pytube->getTitle(),
-                'thumbnail_url' => $pytube->getThumbnailUrl(),
+                'meta' => $pytube->meta(),
             ]);
 
             if (!$this->process->videoExists()) {

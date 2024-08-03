@@ -30,7 +30,7 @@ class Pytube
      * 
      * @var string
      */
-    protected $uuid;
+    public $uuid;
 
     /**
      * Наименование видео
@@ -68,13 +68,28 @@ class Pytube
     protected $path;
 
     /**
+     * Мета данные видео
+     * 
+     * @var array
+     */
+    protected $meta = [];
+
+    /**
+     * Идентификатор видео
+     * 
+     * @var string
+     */
+    protected $videoId;
+
+    /**
      * Инициализация сервиса
      * 
      * @param string $url
      * @return void
      */
     public function __construct(
-        private ?string $url = null
+        private ?string $url = null,
+        ?string $uuid = null
     ) {
 
         throw_if(empty($url), EmptyUrlException::class, 'Необходимо указать ссылку');
@@ -83,16 +98,50 @@ class Pytube
             $this->phyton = exec('which python3');
         }
 
+        $this->videoId = $this->parseVideoId();
+
         $this->dir = base_path('pytube');
         $this->streams = collect();
 
-        $this->uuid = Str::orderedUuid()->toString();
+        $this->uuid = $uuid ?: Str::orderedUuid()->toString();
 
-        $storage = Storage::disk('public');
-        $this->path = $storage->path($this->uuid);
-        $storage->makeDirectory($this->uuid);
+        $storage = Storage::disk('local');
+        $this->path = $storage->path('youtube/' . $this->uuid);
+        $storage->makeDirectory('youtube/' . $this->uuid);
 
         $this->setMeta();
+    }
+
+    /**
+     * Поиск идентиифкатор видео
+     * 
+     * @return string
+     */
+    public function parseVideoId()
+    {
+        $parseUrl = parse_url($this->url);
+        $host = $parseUrl['host'] ?? "";
+
+        if ($host == "youtu.be") {
+            $videoId = pathinfo($parseUrl['path'] ?? "", PATHINFO_BASENAME);
+        } else if (Str::position($host, "youtube.com") !== false) {
+            parse_str($parseUrl['query'] ?? "", $query);
+            $videoId = $query['v'] ?? null;
+        }
+
+        abort_if(empty($videoId), Exception::class, "Не найден идентификатор видео");
+
+        return $this->videoId = ($videoId ?? null);
+    }
+
+    /**
+     * Возвращает идентификатор видео
+     * 
+     * @return string
+     */
+    public function getVideoId()
+    {
+        return $this->videoId;
     }
 
     /**
@@ -113,7 +162,15 @@ class Pytube
         }
 
         $this->title = $output[0] ?? null;
+        $this->meta['title'] = $this->title;
+
         $this->thumbnailUrl = $output[1] ?? null;
+        $this->meta['thumbnail_url'] = $this->thumbnailUrl;
+
+        $this->meta['channel_id'] = $output[3] ?? null;
+        $this->meta['length'] = $output[4] ?? null;
+        $this->meta['publish_date'] = $output[5] ?? null;
+        $this->meta['description'] = collect($output)->splice(6)->join("\n");
 
         $streams = Str::replaceFirst('[', '', Str::replaceLast(']', '',  $output[2] ?? ""));
 
@@ -136,6 +193,8 @@ class Pytube
 
                 return $item;
             });
+
+        $this->meta['streams'] =  $this->streams;
 
         $this->setItags();
     }
@@ -200,7 +259,10 @@ class Pytube
             'abr_int' => $maxAudio,
         ]);
 
-        return $this->itags = $itags;
+        $this->itags = $itags;
+        $this->meta['itags'] = $this->itags;
+
+        return $this->itags;
     }
 
     /**
@@ -217,6 +279,19 @@ class Pytube
         }
 
         return $streams->first()['itag'] ?? null;
+    }
+
+    /**
+     * Формирует путь относительно каталога процесса
+     * 
+     * @param null|string $path
+     * @return string
+     */
+    public function path(?string $path = null)
+    {
+        return collect(['youtube', $this->uuid, $path])
+            ->filter()
+            ->join(DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -266,6 +341,19 @@ class Pytube
     }
 
     /**
+     * Возврашает мета данные
+     * 
+     * @param null|string $key
+     * @return mixed
+     */
+    public function meta(?string $key = null)
+    {
+        return !empty($key)
+            ? ($this->meta[$key] ?? null)
+            : $this->meta;
+    }
+
+    /**
      * Наименование видео
      * 
      * @return null|string
@@ -283,17 +371,5 @@ class Pytube
     public function getThumbnailUrl()
     {
         return $this->thumbnailUrl;
-    }
-
-    /**
-     * Формирует путь
-     * 
-     * @param null|string $path
-     * @return string
-     */
-    public function path(?string $path = null)
-    {
-        return $this->uuid
-            . (!empty($path) ? DIRECTORY_SEPARATOR . $path : "");
     }
 }

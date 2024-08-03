@@ -108,6 +108,7 @@ class Pytube
         $storage = Storage::disk('local');
         $this->path = $storage->path('youtube/' . $this->uuid);
         $storage->makeDirectory('youtube/' . $this->uuid);
+        chown($this->path, 'www-data');
 
         $this->setMeta();
     }

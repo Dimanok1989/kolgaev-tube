@@ -11,6 +11,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class StartDownloadJob implements ShouldQueue
@@ -73,8 +74,9 @@ class StartDownloadJob implements ShouldQueue
                     'video_path' => $pytube->path($basename),
                 ]);
 
-                chown(Storage::path($pytube->path($basename)), env('TUBE_OWNER_USER', 'www-data'));
-                chgrp(Storage::path($pytube->path($basename)), env('TUBE_OWNER_GROUP', 'www-data'));
+                $fullPath = Storage::path($pytube->path($basename));
+                chown($fullPath, env('TUBE_OWNER_USER', 'www-data'));
+                chgrp($fullPath, env('TUBE_OWNER_GROUP', 'www-data'));
             }
 
             if (!$this->process->audioExists()) {
@@ -86,8 +88,9 @@ class StartDownloadJob implements ShouldQueue
                     'audio_path' => $pytube->path($basename),
                 ]);
 
-                chown(Storage::path($pytube->path($basename)), env('TUBE_OWNER_USER', 'www-data'));
-                chgrp(Storage::path($pytube->path($basename)), env('TUBE_OWNER_GROUP', 'www-data'));
+                $fullPath = Storage::path($pytube->path($basename));
+                chown($fullPath, env('TUBE_OWNER_USER', 'www-data'));
+                chgrp($fullPath, env('TUBE_OWNER_GROUP', 'www-data'));
             }
 
             $this->process->update([
@@ -96,7 +99,7 @@ class StartDownloadJob implements ShouldQueue
 
             Http::post($this->process->callback_url . "/downloaded");
         } catch (Exception $e) {
-            \Log::error('job error {error}', ['error' => $e->getMessage()]);
+            Log::error('job error {error}', ['error' => $e->getMessage()]);
             FailedProcessJob::dispatch($this->process->callback_url, $e->getMessage());
         }
     }

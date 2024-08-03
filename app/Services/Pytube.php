@@ -109,17 +109,28 @@ class Pytube
 
         if (!$storage->exists('youtube')) {
             $storage->makeDirectory('youtube');
-            chown($storage->path('youtube'), env('TUBE_OWNER_USER', 'www-data'));
-            chgrp($storage->path('youtube'), env('TUBE_OWNER_GROUP', 'www-data'));
+            $this->setPermit($storage->path('youtube'));
         }
 
         $this->path = $storage->path('youtube/' . $this->uuid);
         $storage->makeDirectory('youtube/' . $this->uuid);
 
-        chown($this->path, env('TUBE_OWNER_USER', 'www-data'));
-        chgrp($this->path, env('TUBE_OWNER_GROUP', 'www-data'));
+        $this->setPermit($this->path);
 
         $this->setMeta();
+    }
+
+    /**
+     * Устаналиваает права на файл
+     * 
+     * @param string $path
+     * @return void
+     */
+    public static function setPermit(string $path)
+    {
+        chown($path, env('TUBE_OWNER_USER', 'www-data'));
+        chgrp($path, env('TUBE_OWNER_GROUP', 'www-data'));
+        chmod($path, 755);
     }
 
     /**

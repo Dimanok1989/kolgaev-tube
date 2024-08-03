@@ -229,11 +229,15 @@ class Pytube
             $itag,
         ];
 
+        $filename = Str::random(50);
+
         if ($mimeType = collect($this->streams)->firstWhere('itag', $itag)['mime_type'] ?? null) {
             if ($extension = explode("/", $mimeType)[1] ?? null) {
-                $parts[] = Str::slug($this->title) . "." . $extension;
+                $filename = Str::slug($this->title) . "." . $extension;
             }
         }
+
+        $parts[] = $filename;
 
         return implode(" ", $parts);
     }

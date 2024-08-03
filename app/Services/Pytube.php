@@ -130,7 +130,7 @@ class Pytube
     {
         chown($path, env('TUBE_OWNER_USER', 'www-data'));
         chgrp($path, env('TUBE_OWNER_GROUP', 'www-data'));
-        chmod($path, 0644);
+        chmod($path, 0755);
     }
 
     /**

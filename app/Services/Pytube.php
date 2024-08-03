@@ -221,13 +221,21 @@ class Pytube
      */
     private function downloadCommand(string $itag = "")
     {
-        return implode(" ", [
+        $parts = [
             $this->phyton,
             $this->dir . DIRECTORY_SEPARATOR . "download.py",
-            $this->url,
-            $this->path,
-            $itag
-        ]);
+            '"' . $this->url . '"',
+            '"' . $this->path . '"',
+            $itag,
+        ];
+
+        if ($mimeType = collect($this->streams)->firstWhere('itag', $itag)['mime_type'] ?? null) {
+            if ($extension = explode("/", $mimeType)[1] ?? null) {
+                $parts[] = Str::slug($this->title) . "." . $extension;
+            }
+        }
+
+        return implode(" ", $parts);
     }
 
     /**

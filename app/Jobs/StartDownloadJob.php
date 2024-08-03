@@ -71,6 +71,9 @@ class StartDownloadJob implements ShouldQueue
                 $this->process->update([
                     'video_path' => $pytube->path($basename),
                 ]);
+
+                chown(Storage::path($pytube->path($basename)), env('TUBE_OWNER_USER', 'www-data'));
+                chgrp(Storage::path($pytube->path($basename)), env('TUBE_OWNER_GROUP', 'www-data'));
             }
 
             if (!$this->process->audioExists()) {
@@ -81,6 +84,9 @@ class StartDownloadJob implements ShouldQueue
                 $this->process->update([
                     'audio_path' => $pytube->path($basename),
                 ]);
+
+                chown(Storage::path($pytube->path($basename)), env('TUBE_OWNER_USER', 'www-data'));
+                chgrp(Storage::path($pytube->path($basename)), env('TUBE_OWNER_GROUP', 'www-data'));
             }
 
             $this->process->update([

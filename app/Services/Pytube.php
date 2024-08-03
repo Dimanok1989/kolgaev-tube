@@ -106,9 +106,18 @@ class Pytube
         $this->uuid = $uuid ?: Str::orderedUuid()->toString();
 
         $storage = Storage::disk('local');
+
+        if (!$storage->exists('youtube')) {
+            $storage->makeDirectory('youtube');
+            chown($storage->path('youtube'), env('TUBE_OWNER_USER', 'www-data'));
+            chgrp($storage->path('youtube'), env('TUBE_OWNER_GROUP', 'www-data'));
+        }
+
         $this->path = $storage->path('youtube/' . $this->uuid);
         $storage->makeDirectory('youtube/' . $this->uuid);
-        chown($this->path, 'www-data');
+
+        chown($this->path, env('TUBE_OWNER_USER', 'www-data'));
+        chgrp($this->path, env('TUBE_OWNER_GROUP', 'www-data'));
 
         $this->setMeta();
     }

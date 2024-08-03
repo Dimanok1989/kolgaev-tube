@@ -316,14 +316,15 @@ class Pytube
     {
         $response = [];
 
-        $process = Process::run(
-            $this->downloadCommand($itag),
-            function (string $type, string $output) use (&$response) {
-                if ($type == "out") {
-                    $response[] = $output;
+        $process = Process::timeout(3600)
+            ->run(
+                $this->downloadCommand($itag),
+                function (string $type, string $output) use (&$response) {
+                    if ($type == "out") {
+                        $response[] = $output;
+                    }
                 }
-            }
-        );
+            );
 
         if ($process->failed()) {
             throw new Exception("Ошибка скачивания файла");

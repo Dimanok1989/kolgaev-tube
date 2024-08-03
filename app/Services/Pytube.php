@@ -130,7 +130,7 @@ class Pytube
     {
         chown($path, env('TUBE_OWNER_USER', 'www-data'));
         chgrp($path, env('TUBE_OWNER_GROUP', 'www-data'));
-        chmod($path, 755);
+        chmod($path, 0644);
     }
 
     /**
@@ -178,7 +178,6 @@ class Pytube
         $output = explode("\n", $result->output());
 
         if ($result->failed()) {
-            \Log::error('set meta error:', $output);
             throw new SetStreamsException("Ошибка получения мета данных");
         }
 

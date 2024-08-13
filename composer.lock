@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6d25fb8d214b82ca42f867bfa7f55470",
+    "content-hash": "e875f5963282b747f2fed7613cf4bc61",
     "packages": [
         {
             "name": "brick/math",
@@ -1049,6 +1049,38 @@
                 }
             ],
             "time": "2023-12-03T19:50:20+00:00"
+        },
+        {
+            "name": "kolgaev/laravel-tube",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Dimanok1989/laravel-tube",
+                "reference": "42223c664ce28cc2eeeac1aff4c367909e4cbdb2"
+            },
+            "require": {
+                "laravel/framework": "^10.0|^11.0",
+                "php": "^8.0|^8.1"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kolgaev\\Tube\\Providers\\TubeServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kolgaev\\Tube\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Downloader video",
+            "time": "2024-08-08T19:39:15+00:00"
         },
         {
             "name": "laravel/framework",
@@ -7881,7 +7913,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,

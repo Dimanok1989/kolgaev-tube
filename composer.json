@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "kolgaev/laravel-tube": "dev-master",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "predis/predis": "^2.2"
@@ -61,6 +62,12 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/Dimanok1989/laravel-tube"
+        }
+    ]
 }
